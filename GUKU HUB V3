@@ -1,0 +1,320 @@
+
+--[[
+    GUKU HUB V1.0
+    Game: Steal An Egg
+    Theme: Yellow + Black
+    By: GUKU
+]]
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "GUKU_HUB"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local Yellow = Color3.fromRGB(255, 210, 0)
+local Black = Color3.fromRGB(15, 15, 15)
+local Panel = Color3.fromRGB(25, 25, 25)
+local White = Color3.fromRGB(255, 255, 255)
+
+-- Main window
+local Main = Instance.new("Frame")
+Main.Size = UDim2.new(0, 520, 0, 350)
+Main.Position = UDim2.new(0.5, -260, 0.5, -175)
+Main.BackgroundColor3 = Black
+Main.BorderSizePixel = 0
+Main.Parent = gui
+
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
+
+local Stroke = Instance.new("UIStroke")
+Stroke.Color = Yellow
+Stroke.Thickness = 2
+Stroke.Parent = Main
+
+-- Dragging
+local dragging = false
+local dragStart, startPos
+
+Main.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = Main.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        Main.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+-- Header
+local Header = Instance.new("TextLabel")
+Header.Size = UDim2.new(1, -60, 0, 50)
+Header.Position = UDim2.new(0, 15, 0, 0)
+Header.BackgroundTransparency = 1
+Header.Text = "GUKU HUB  |  V1.0"
+Header.TextColor3 = Yellow
+Header.Font = Enum.Font.GothamBold
+Header.TextSize = 22
+Header.TextXAlignment = Enum.TextXAlignment.Left
+Header.Parent = Main
+
+-- Minimize button
+local Minimize = Instance.new("TextButton")
+Minimize.Size = UDim2.new(0, 35, 0, 35)
+Minimize.Position = UDim2.new(1, -45, 0, 7)
+Minimize.Text = "-"
+Minimize.TextColor3 = Yellow
+Minimize.BackgroundColor3 = Panel
+Minimize.Font = Enum.Font.GothamBold
+Minimize.TextSize = 24
+Minimize.Parent = Main
+Instance.new("UICorner", Minimize)
+
+-- Sidebar
+local Sidebar = Instance.new("Frame")
+Sidebar.Size = UDim2.new(0, 135, 1, -60)
+Sidebar.Position = UDim2.new(0, 10, 0, 52)
+Sidebar.BackgroundColor3 = Panel
+Sidebar.BorderSizePixel = 0
+Sidebar.Parent = Main
+Instance.new("UICorner", Sidebar)
+
+local SideLayout = Instance.new("UIListLayout")
+SideLayout.Padding = UDim.new(0, 7)
+SideLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+SideLayout.Parent = Sidebar
+
+-- Content
+local Content = Instance.new("Frame")
+Content.Size = UDim2.new(1, -165, 1, -65)
+Content.Position = UDim2.new(0, 155, 0, 55)
+Content.BackgroundColor3 = Panel
+Content.BorderSizePixel = 0
+Content.Parent = Main
+Instance.new("UICorner", Content)
+
+local function clearContent()
+    for _, item in pairs(Content:GetChildren()) do
+        item:Destroy()
+    end
+end
+
+local function createLabel(text, y)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -20, 0, 35)
+    label.Position = UDim2.new(0, 10, 0, y)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = Yellow
+    label.Font = Enum.Font.GothamBold
+    label.TextSize = 18
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = Content
+    return label
+end
+
+local function createToggle(name, y, callback)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -20, 0, 38)
+    button.Position = UDim2.new(0, 10, 0, y)
+    button.BackgroundColor3 = Black
+    button.TextColor3 = White
+    button.Text = name .. " : OFF"
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 13
+    button.Parent = Content
+    Instance.new("UICorner", button)
+
+    local enabled = false
+
+    button.MouseButton1Click:Connect(function()
+        enabled = not enabled
+        button.Text = name .. (enabled and " : ON" or " : OFF")
+        button.TextColor3 = enabled and Yellow or White
+
+        if callback then
+            callback(enabled)
+        end
+    end)
+
+    return button
+end
+
+local function createTab(name, callback)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -10, 0, 38)
+    button.BackgroundColor3 = Black
+    button.Text = name
+    button.TextColor3 = Yellow
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 13
+    button.Parent = Sidebar
+    Instance.new("UICorner", button)
+
+    button.MouseButton1Click:Connect(callback)
+end
+
+-- FARM TAB
+local function FarmTab()
+    clearContent()
+    createLabel("🥚 FARM SETTINGS", 10)
+
+    createToggle("Auto Collect", 55, function(enabled)
+        print("Auto Collect:", enabled)
+    end)
+
+    createToggle("Auto Hatch", 105, function(enabled)
+        print("Auto Hatch:", enabled)
+    end)
+
+    createToggle("Auto Farm", 155, function(enabled)
+        print("Auto Farm:", enabled)
+    end)
+end
+
+-- PLAYER TAB
+local function PlayerTab()
+    clearContent()
+    createLabel("PLAYER SETTINGS", 10)
+
+    local speed = Instance.new("TextBox")
+    speed.Size = UDim2.new(1, -20, 0, 40)
+    speed.Position = UDim2.new(0, 10, 0, 60)
+    speed.BackgroundColor3 = Black
+    speed.TextColor3 = Yellow
+    speed.PlaceholderText = "Enter WalkSpeed"
+    speed.Text = "16"
+    speed.Parent = Content
+    Instance.new("UICorner", speed)
+
+    local function applyStats()
+        local humanoid = player.Character and
+            player.Character:FindFirstChildOfClass("Humanoid")
+
+        if humanoid then
+            local value = tonumber(speed.Text)
+            if value then
+                humanoid.WalkSpeed = math.clamp(value, 0, 100)
+            end
+        end
+    end
+
+    speed.FocusLost:Connect(applyStats)
+
+    local jump = Instance.new("TextBox")
+    jump.Size = UDim2.new(1, -20, 0, 40)
+    jump.Position = UDim2.new(0, 10, 0, 115)
+    jump.BackgroundColor3 = Black
+    jump.TextColor3 = Yellow
+    jump.PlaceholderText = "Enter JumpPower"
+    jump.Text = "50"
+    jump.Parent = Content
+    Instance.new("UICorner", jump)
+
+    jump.FocusLost:Connect(function()
+        local humanoid = player.Character and
+            player.Character:FindFirstChildOfClass("Humanoid")
+
+        local value = tonumber(jump.Text)
+        if humanoid and value then
+            humanoid.UseJumpPower = true
+            humanoid.JumpPower = math.clamp(value, 0, 150)
+        end
+    end)
+end
+
+-- PREDICTOR TAB
+local function PredictorTab()
+    clearContent()
+    createLabel("PREDICTOR", 10)
+    createLabel("Egg spawn information", 60)
+    createLabel("Connect your game's spawn data here.", 100)
+end
+
+-- PROGRESS TAB
+local function ProgressTab()
+    clearContent()
+    createLabel("YOUR PROGRESS", 10)
+    createLabel("Eggs collected: Game data required", 60)
+    createLabel("Pets collected: Game data required", 105)
+end
+
+-- SERVER TAB
+local function ServerTab()
+    clearContent()
+    createLabel("SERVER INFORMATION", 10)
+    createLabel("Players: " .. #Players:GetPlayers(), 60)
+    createLabel("Job ID: " .. game.JobId, 105)
+end
+
+-- SETTINGS TAB
+local function SettingsTab()
+    clearContent()
+    createLabel("GUKU HUB SETTINGS", 10)
+
+    createToggle("Yellow Theme", 60, function(enabled)
+        Stroke.Color = enabled and Yellow or White
+    end)
+
+    createToggle("Show Notifications", 110, function(enabled)
+        print("Notifications:", enabled)
+    end)
+end
+
+-- Create tabs
+createTab("FARM", FarmTab)
+createTab("PLAYER", PlayerTab)
+createTab("PREDICTOR", PredictorTab)
+createTab("PROGRESS", ProgressTab)
+createTab("SERVER", ServerTab)
+createTab("SETTINGS", SettingsTab)
+
+-- Minimize / reopen
+local OpenButton = Instance.new("TextButton")
+OpenButton.Size = UDim2.new(0, 120, 0, 40)
+OpenButton.Position = UDim2.new(0, 20, 0.5, 0)
+OpenButton.BackgroundColor3 = Yellow
+OpenButton.Text = "GUKU HUB"
+OpenButton.TextColor3 = Black
+OpenButton.Font = Enum.Font.GothamBold
+OpenButton.TextSize = 16
+OpenButton.Visible = false
+OpenButton.Parent = gui
+Instance.new("UICorner", OpenButton)
+
+Minimize.MouseButton1Click:Connect(function()
+    Main.Visible = false
+    OpenButton.Visible = true
+end)
+
+OpenButton.MouseButton1Click:Connect(function()
+    Main.Visible = true
+    OpenButton.Visible = false
+end)
+
+-- Default tab
+FarmTab()
+
+print("GUKU HUB V1.0 Loaded!")
